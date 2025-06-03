@@ -1,16 +1,18 @@
 export const lightTheme = {
-  primary: '#D32F2F',           // vermelho mais escuro (para botões e header)
-  background: '#FFEBEE',        // vermelho claro para o fundo
+  primary: '#D32F2F',
+  secondary: '#FF9F1C', // ✅ Adicione aqui
+  background: '#FFEBEE',
   text: '#212121',
-  border: '#FFCDD2',            // borda vermelha clara
+  border: '#FFCDD2',
   placeholder: '#757575',
   buttonText: '#FFFFFF',
   link: '#C62828',
-  card: '#FFEBEE',              // vermelho claro para containers
+  card: '#FFEBEE',
 };
 
 export const darkTheme = {
   primary: '#B71C1C',
+  secondary: '#FF9F1C', // ✅ Também adicione aqui
   background: '#121212',
   text: '#E0E0E0',
   border: '#444',
@@ -30,3 +32,17 @@ const ThemeContext = createContext({ colors: theme });
 
 export const ThemeProvider = ThemeContext.Provider;
 export const useTheme = () => useContext(ThemeContext);
+
+export const defaultTheme = {
+  colors: {
+    primary: '#D7263D',
+    secondary: '#FF9F1C', // ✅ adicionado
+    background: '#FFF',
+    text: '#000',
+    border: '#ccc',
+    placeholder: '#999',
+    buttonText: '#FFF',
+    link: '#1E90FF',
+    card: '#FFF',
+  },
+};

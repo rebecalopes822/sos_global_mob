@@ -7,6 +7,9 @@ import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
 import NovaSolicitacaoScreen from '../screens/NovaSolicitacaoScreen';
 import MinhasSolicitacoesScreen from '../screens/MinhasSolicitacoesScreen';
+import EditarSolicitacaoScreen from '../screens/EditarSolicitacaoScreen';
+import TiposAjudaScreen from '../screens/TiposAjudaScreen'; // ✅ IMPORTADA
+
 import { TouchableOpacity, Text } from 'react-native';
 import { useTheme } from '../theme';
 
@@ -28,7 +31,7 @@ export default function Routes() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
 
-        {/* Telas privadas com botão "Sair" */}
+        {/* Telas privadas */}
         <Stack.Screen
           name="Home"
           component={HomeScreen}
@@ -50,6 +53,22 @@ export default function Routes() {
           component={MinhasSolicitacoesScreen}
           options={({ navigation }) => ({
             title: 'Minhas Solicitações',
+            headerRight: () => renderSairButton(navigation),
+          })}
+        />
+        <Stack.Screen
+          name="EditarSolicitacao"
+          component={EditarSolicitacaoScreen}
+          options={({ navigation }) => ({
+            title: 'Editar Solicitação',
+            headerRight: () => renderSairButton(navigation),
+          })}
+        />
+        <Stack.Screen
+          name="TiposAjuda"
+          component={TiposAjudaScreen}
+          options={({ navigation }) => ({
+            title: 'Tipos de Ajuda',
             headerRight: () => renderSairButton(navigation),
           })}
         />

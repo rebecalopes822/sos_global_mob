@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import Layout from '../components/Layout';
 import { useTheme } from '../theme';
+import { criarUsuario } from '../services/UsuarioService';
 
 type RegisterScreenProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
@@ -12,50 +13,72 @@ export default function RegisterScreen() {
   const navigation = useNavigation<RegisterScreenProp>();
   const { colors } = useTheme();
 
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [ehVoluntario, setEhVoluntario] = useState('');
+
+  const handleRegister = async () => {
+    try {
+      const ehVoluntarioInt = ehVoluntario.toLowerCase() === 'sim' ? 1 : ehVoluntario.toLowerCase() === 'não' || ehVoluntario.toLowerCase() === 'nao' ? 0 : -1;
+
+      if (ehVoluntarioInt === -1) {
+        Alert.alert('Erro', 'Campo "É Voluntário?" deve ser "Sim" ou "Não".');
+        return;
+      }
+
+      await criarUsuario({
+        nome,
+        email,
+        telefone,
+        ehVoluntario: ehVoluntarioInt,
+      });
+
+      Alert.alert('Sucesso', 'Usuário registrado com sucesso!');
+      navigation.navigate('Login'); // ou 'Home', conforme sua lógica
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível registrar. Verifique os dados.');
+    }
+  };
 
   return (
     <Layout>
       <View style={styles.content}>
-        <View style={styles.headerText}>
-          <Text style={[styles.welcome, { color: colors.primary }]}>Crie sua conta no SOS GR.</Text>
-          <Text style={[styles.subtitle, { color: colors.text }]}>
-            Junte-se a nós para ajudar quem mais precisa em momentos críticos.
-          </Text>
-        </View>
+        <Text style={[styles.welcome, { color: colors.primary }]}>Crie sua conta no SOS GR</Text>
 
+        <TextInput
+          placeholder="Nome completo"
+          value={nome}
+          onChangeText={setNome}
+          style={[styles.input, { borderColor: colors.border, color: colors.text }]}
+          placeholderTextColor={colors.placeholder}
+        />
         <TextInput
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
+          keyboardType="email-address"
           style={[styles.input, { borderColor: colors.border, color: colors.text }]}
           placeholderTextColor={colors.placeholder}
         />
-
         <TextInput
-          placeholder="Senha"
-          value={senha}
-          onChangeText={setSenha}
-          secureTextEntry
+          placeholder="Telefone"
+          value={telefone}
+          onChangeText={setTelefone}
+          keyboardType="phone-pad"
           style={[styles.input, { borderColor: colors.border, color: colors.text }]}
           placeholderTextColor={colors.placeholder}
         />
-
         <TextInput
-          placeholder="Confirmar Senha"
-          value={confirmarSenha}
-          onChangeText={setConfirmarSenha}
-          secureTextEntry
+          placeholder='É voluntário? ("Sim" ou "Não")'
+          value={ehVoluntario}
+          onChangeText={setEhVoluntario}
           style={[styles.input, { borderColor: colors.border, color: colors.text }]}
           placeholderTextColor={colors.placeholder}
         />
 
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: colors.primary }]}
-          onPress={() => navigation.navigate('Home')}
-        >
+        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleRegister}>
           <Text style={[styles.buttonText, { color: colors.buttonText }]}>Registrar</Text>
         </TouchableOpacity>
 
@@ -73,18 +96,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
-  headerText: {
-    marginBottom: 24,
-  },
   welcome: {
     fontSize: 22,
     fontWeight: '700',
     textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 6,
+    marginBottom: 24,
   },
   input: {
     borderWidth: 1,

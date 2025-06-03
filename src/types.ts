@@ -1,4 +1,4 @@
-import { PedidoAjuda } from './PedidoAjuda';
+import { PedidoAjuda } from './types/PedidoAjuda';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -6,7 +6,8 @@ export type RootStackParamList = {
   Home: undefined;
   NovaSolicitacao: undefined;
   MinhasSolicitacoes: undefined;
-  Confirmacao: { idSolicitacao: string };
   EditarSolicitacao: { pedido: PedidoAjuda };
-  TiposAjuda: undefined; // ✅ nova rota adicionada
+  TiposAjuda: undefined;
+  Confirmacao: undefined;
 };
+
