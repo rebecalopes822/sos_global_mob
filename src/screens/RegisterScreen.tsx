@@ -6,6 +6,7 @@ import { RootStackParamList } from '../types';
 import Layout from '../components/Layout';
 import { useTheme } from '../theme';
 import { criarUsuario } from '../services/UsuarioService';
+import { MaskedTextInput } from 'react-native-mask-text';
 
 type RegisterScreenProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
@@ -18,15 +19,36 @@ export default function RegisterScreen() {
   const [telefone, setTelefone] = useState('');
   const [ehVoluntario, setEhVoluntario] = useState('');
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   const handleRegister = async () => {
+    if (!nome || !email || !telefone || !ehVoluntario) {
+      Alert.alert('Atenção', 'Todos os campos devem ser preenchidos.');
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      Alert.alert('Erro no Email', 'Digite um email válido. Ex: usuario@email.com');
+      return;
+    }
+
+    // Validação: telefone precisa estar no formato completo com 15 caracteres
+    if (telefone.length !== 15) {
+      Alert.alert('Erro no Telefone', 'Digite um telefone válido no formato (11) 91234-5678');
+      return;
+    }
+
+    if (ehVoluntario !== 'Sim' && ehVoluntario !== 'Não') {
+      Alert.alert(
+        'Erro no campo "É voluntário?"',
+        'Digite exatamente "Sim" ou "Não", com a primeira letra maiúscula.'
+      );
+      return;
+    }
+
+    const ehVoluntarioInt = ehVoluntario === 'Sim' ? 1 : 0;
+
     try {
-      const ehVoluntarioInt = ehVoluntario.toLowerCase() === 'sim' ? 1 : ehVoluntario.toLowerCase() === 'não' || ehVoluntario.toLowerCase() === 'nao' ? 0 : -1;
-
-      if (ehVoluntarioInt === -1) {
-        Alert.alert('Erro', 'Campo "É Voluntário?" deve ser "Sim" ou "Não".');
-        return;
-      }
-
       await criarUsuario({
         nome,
         email,
@@ -35,7 +57,7 @@ export default function RegisterScreen() {
       });
 
       Alert.alert('Sucesso', 'Usuário registrado com sucesso!');
-      navigation.navigate('Login'); // ou 'Home', conforme sua lógica
+      navigation.navigate('Login');
     } catch (error) {
       console.error(error);
       Alert.alert('Erro', 'Não foi possível registrar. Verifique os dados.');
@@ -62,11 +84,12 @@ export default function RegisterScreen() {
           style={[styles.input, { borderColor: colors.border, color: colors.text }]}
           placeholderTextColor={colors.placeholder}
         />
-        <TextInput
-          placeholder="Telefone"
+        <MaskedTextInput
+          mask="(99) 99999-9999"
+          keyboardType="phone-pad"
           value={telefone}
           onChangeText={setTelefone}
-          keyboardType="phone-pad"
+          placeholder="Telefone"
           style={[styles.input, { borderColor: colors.border, color: colors.text }]}
           placeholderTextColor={colors.placeholder}
         />
@@ -78,7 +101,10 @@ export default function RegisterScreen() {
           placeholderTextColor={colors.placeholder}
         />
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleRegister}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: colors.primary }]}
+          onPress={handleRegister}
+        >
           <Text style={[styles.buttonText, { color: colors.buttonText }]}>Registrar</Text>
         </TouchableOpacity>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
@@ -15,6 +15,13 @@ export default function HomeScreen() {
   return (
     <Layout>
       <View style={styles.content}>
+        {/* Imagem da logo no topo */}
+        <Image
+          source={require('../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
         <Text style={[styles.title, { color: colors.text }]}>
           Selecione o que deseja:
         </Text>
@@ -32,6 +39,11 @@ export default function HomeScreen() {
         >
           <Text style={[styles.secondaryText, { color: colors.primary }]}>Ver Minhas Solicitações</Text>
         </TouchableOpacity>
+
+        <Text style={[styles.infoText, { color: colors.text }]}>
+          Para suporte, contate: suporte@sosapp@gmail.com{'\n'}
+          Telefone: (11) 99999-9999
+        </Text>
       </View>
     </Layout>
   );
@@ -40,26 +52,35 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
+    justifyContent: 'flex-start',  // alinha ao topo
+    marginTop: 20,                  // pequeno espaçamento do topo da tela
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: 12,
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 36,
+    marginBottom: 16,
   },
   primaryButton: {
     padding: 16,
     borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
+    width: '100%',
   },
   secondaryButton: {
     padding: 16,
     borderWidth: 2,
     borderRadius: 10,
     alignItems: 'center',
+    width: '100%',
   },
   buttonText: {
     fontSize: 16,
@@ -68,5 +89,11 @@ const styles = StyleSheet.create({
   secondaryText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  infoText: {
+    marginTop: 32,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

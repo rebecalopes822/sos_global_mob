@@ -1,5 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import Layout from '../components/Layout';
 import { useTheme } from '../theme';
 import { listarPedidosAjuda, deletarPedido } from '../services/PedidoAjudaService';
@@ -12,18 +20,23 @@ export default function MinhasSolicitacoesScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [pedidos, setPedidos] = useState<PedidoAjuda[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const carregarPedidos = async () => {
+    setLoading(true);
     try {
       const response = await listarPedidosAjuda();
       setPedidos(response.data);
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);
       Alert.alert('Erro', 'Não foi possível carregar as solicitações.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const excluirPedido = async (id: number) => {
+    setLoading(true);
     try {
       await deletarPedido(id);
       Alert.alert('Sucesso', 'Solicitação excluída com sucesso!');
@@ -31,6 +44,7 @@ export default function MinhasSolicitacoesScreen() {
     } catch (error) {
       console.error('Erro ao excluir pedido:', error);
       Alert.alert('Erro', 'Não foi possível excluir a solicitação.');
+      setLoading(false);
     }
   };
 
@@ -40,30 +54,47 @@ export default function MinhasSolicitacoesScreen() {
     }, [])
   );
 
-  const renderItem = ({ item }: { item: PedidoAjuda }) => (
-    <View style={[styles.card, { borderColor: colors.primary }]}>
-      <Text style={[styles.cardText, { color: colors.text }]}>Endereço: {item.endereco}</Text>
-      <Text style={[styles.cardText, { color: colors.text }]}>Tipo de Ajuda ID: {item.tipoAjudaId}</Text>
-      <Text style={[styles.cardText, { color: colors.text }]}>Pessoas: {item.quantidadePessoas}</Text>
-      <Text style={[styles.cardText, { color: colors.text }]}>Urgência: {item.nivelUrgencia}</Text>
+  const renderItem = ({ item }: { item: PedidoAjuda }) => {
+    const tipoValido = item.tipoAjudaId >= 1 && item.tipoAjudaId <= 6;
 
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('EditarSolicitacao', { pedido: item })}
-          style={[styles.editButton, { backgroundColor: colors.primary }]}
-        >
-          <Text style={{ color: colors.buttonText }}>Editar</Text>
-        </TouchableOpacity>
+    return (
+      <View style={[styles.card, { borderColor: colors.primary }]}>
+        <Text style={[styles.cardText, { color: colors.text }]}>Endereço: {item.endereco}</Text>
+        <Text style={[styles.cardText, { color: colors.text }]}>
+          Tipo de Ajuda ID: {tipoValido ? item.tipoAjudaId : '❌ Tipo inválido'}
+        </Text>
+        <Text style={[styles.cardText, { color: colors.text }]}>Pessoas: {item.quantidadePessoas}</Text>
+        <Text style={[styles.cardText, { color: colors.text }]}>Urgência: {item.nivelUrgencia}</Text>
 
-        <TouchableOpacity
-          onPress={() => excluirPedido(item.id)}
-          style={[styles.deleteButton, { backgroundColor: colors.secondary ?? '#ff3b30' }]}
-        >
-          <Text style={{ color: colors.buttonText }}>Excluir</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('EditarSolicitacao', { pedido: item })}
+            style={[styles.editButton, { backgroundColor: colors.primary }]}
+          >
+            <Text style={{ color: colors.buttonText }}>Editar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => excluirPedido(item.id)}
+            style={[styles.deleteButton, { backgroundColor: colors.secondary ?? '#ff3b30' }]}
+          >
+            <Text style={{ color: colors.buttonText }}>Excluir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
+
+  if (loading) {
+    return (
+      <Layout showBack>
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ marginTop: 12, color: colors.text }}>Carregando solicitações...</Text>
+        </View>
+      </Layout>
+    );
+  }
 
   return (
     <Layout showBack>
@@ -71,7 +102,17 @@ export default function MinhasSolicitacoesScreen() {
         <Text style={[styles.title, { color: colors.primary }]}>Minhas Solicitações</Text>
 
         {pedidos.length === 0 ? (
-          <Text style={styles.info}>Você ainda não fez nenhuma solicitação.</Text>
+          <View style={styles.emptyBox}>
+            <Text style={[styles.info, { color: colors.text }]}>
+              Você ainda não fez nenhuma solicitação.
+            </Text>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.primary }]}
+              onPress={() => navigation.navigate('NovaSolicitacao')}
+            >
+              <Text style={{ color: colors.buttonText }}>Fazer uma nova solicitação</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <FlatList
             data={pedidos}
@@ -98,8 +139,8 @@ const styles = StyleSheet.create({
   },
   info: {
     fontSize: 16,
-    color: '#555',
     textAlign: 'center',
+    marginBottom: 12,
   },
   card: {
     borderWidth: 1,
@@ -129,6 +170,22 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     padding: 10,
     borderRadius: 6,
+    alignItems: 'center',
+  },
+  button: {
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  emptyBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
 });

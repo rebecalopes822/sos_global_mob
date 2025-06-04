@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Layout from '../components/Layout';
 import { useTheme } from '../theme';
@@ -19,18 +20,18 @@ export default function NovaSolicitacaoScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [tipoAjuda, setTipoAjuda] = useState('');
-  const [localizacao, setLocalizacao] = useState('');
-  const [descricao, setDescricao] = useState('');
+  const [endereco, setEndereco] = useState('');
   const [pessoas, setPessoas] = useState('');
-  const [criancas, setCriancas] = useState('');
+  const [nivelUrgencia, setNivelUrgencia] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     const tipoAjudaId = parseInt(tipoAjuda);
     const quantidadePessoas = parseInt(pessoas);
-    const nivelUrgencia = 3; // fixo
-    const usuarioId = 1;     // fixo até login
+    const nivelUrgenciaInt = parseInt(nivelUrgencia);
+    const usuarioId = 1; // ajustar conforme autenticação real
 
-    if (!tipoAjuda || !localizacao || !pessoas) {
+    if (!tipoAjuda || !endereco || !pessoas || !nivelUrgencia) {
       Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
       return;
     }
@@ -45,28 +46,45 @@ export default function NovaSolicitacaoScreen() {
       return;
     }
 
+    if (isNaN(nivelUrgenciaInt) || nivelUrgenciaInt < 1 || nivelUrgenciaInt > 5) {
+      Alert.alert('Erro', 'Nível de urgência deve ser um número entre 1 e 5.');
+      return;
+    }
+
+    setLoading(true);
     try {
       await criarPedidoAjuda({
         usuarioId,
         tipoAjudaId,
-        endereco: localizacao,
+        endereco,
         quantidadePessoas,
-        nivelUrgencia,
+        nivelUrgencia: nivelUrgenciaInt,
       });
 
       Alert.alert('Sucesso', 'Solicitação enviada com sucesso!');
       setTipoAjuda('');
-      setLocalizacao('');
-      setDescricao('');
+      setEndereco('');
       setPessoas('');
-      setCriancas('');
-
+      setNivelUrgencia('');
       navigation.navigate('MinhasSolicitacoes');
     } catch (error) {
       console.error(error);
       Alert.alert('Erro', 'Falha ao enviar solicitação. Verifique os dados.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Layout showBack>
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ marginTop: 12, color: colors.text }}>Enviando solicitação...</Text>
+        </View>
+      </Layout>
+    );
+  }
 
   return (
     <Layout showBack>
@@ -88,20 +106,10 @@ export default function NovaSolicitacaoScreen() {
       />
 
       <TextInput
-        placeholder="Localização (CEP ou Endereço)"
-        value={localizacao}
-        onChangeText={setLocalizacao}
+        placeholder="Endereço completo"
+        value={endereco}
+        onChangeText={setEndereco}
         style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-        placeholderTextColor={colors.placeholder}
-      />
-
-      <TextInput
-        placeholder="Descrição da situação"
-        value={descricao}
-        onChangeText={setDescricao}
-        multiline
-        numberOfLines={3}
-        style={[styles.input, { height: 80, borderColor: colors.border, color: colors.text }]}
         placeholderTextColor={colors.placeholder}
       />
 
@@ -115,9 +123,10 @@ export default function NovaSolicitacaoScreen() {
       />
 
       <TextInput
-        placeholder="Há crianças? (Sim/Não)"
-        value={criancas}
-        onChangeText={setCriancas}
+        placeholder="Nível de urgência (1 a 5)"
+        value={nivelUrgencia}
+        onChangeText={setNivelUrgencia}
+        keyboardType="numeric"
         style={[styles.input, { borderColor: colors.border, color: colors.text }]}
         placeholderTextColor={colors.placeholder}
       />
@@ -125,6 +134,7 @@ export default function NovaSolicitacaoScreen() {
       <TouchableOpacity
         style={[styles.button, { backgroundColor: colors.primary }]}
         onPress={handleSubmit}
+        disabled={loading} // desabilita botão enquanto carrega
       >
         <Text style={[styles.buttonText, { color: colors.buttonText }]}>
           Enviar Solicitação
@@ -162,5 +172,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 12,
     textDecorationLine: 'underline',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

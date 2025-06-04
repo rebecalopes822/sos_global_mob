@@ -5,4 +5,5 @@ export interface PedidoAjuda {
   endereco: string;
   quantidadePessoas: number;
   nivelUrgencia: number;
+  dataHoraPedido?: string;
 }
