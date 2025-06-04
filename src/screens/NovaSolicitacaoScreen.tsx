@@ -29,7 +29,7 @@ export default function NovaSolicitacaoScreen() {
     const tipoAjudaId = parseInt(tipoAjuda);
     const quantidadePessoas = parseInt(pessoas);
     const nivelUrgenciaInt = parseInt(nivelUrgencia);
-    const usuarioId = 1; // ajustar conforme autenticação real
+    const usuarioId = 1; 
 
     if (!tipoAjuda || !endereco || !pessoas || !nivelUrgencia) {
       Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
@@ -134,7 +134,7 @@ export default function NovaSolicitacaoScreen() {
       <TouchableOpacity
         style={[styles.button, { backgroundColor: colors.primary }]}
         onPress={handleSubmit}
-        disabled={loading} // desabilita botão enquanto carrega
+        disabled={loading} 
       >
         <Text style={[styles.buttonText, { color: colors.buttonText }]}>
           Enviar Solicitação

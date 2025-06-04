@@ -156,7 +156,7 @@ export default function EditarSolicitacaoScreen() {
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.primary }]}
           onPress={handleUpdate}
-          disabled={loading} // desabilita o botão enquanto carrega
+          disabled={loading} 
         >
           <Text style={[styles.buttonText, { color: colors.buttonText }]}>Salvar Alterações</Text>
         </TouchableOpacity>

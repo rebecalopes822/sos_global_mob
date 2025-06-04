@@ -1,102 +1,98 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import Layout from '../components/Layout';
+import { useTheme } from '../theme';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import Layout from '../components/Layout';
-import { useTheme } from '../theme';
-import { criarUsuario } from '../services/UsuarioService';
-import { MaskedTextInput } from 'react-native-mask-text';
 
 type RegisterScreenProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
+
+function traduzirErroFirebase(code: string): string {
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'Este e-mail já está em uso.';
+    case 'auth/invalid-email':
+      return 'O e-mail informado é inválido.';
+    case 'auth/operation-not-allowed':
+      return 'Operação não permitida. Contate o suporte.';
+    case 'auth/weak-password':
+      return 'A senha deve ter no mínimo 6 caracteres.';
+    default:
+      return 'Erro desconhecido. Por favor, tente novamente.';
+  }
+}
 
 export default function RegisterScreen() {
   const navigation = useNavigation<RegisterScreenProp>();
   const { colors } = useTheme();
 
-  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
-  const [telefone, setTelefone] = useState('');
-  const [ehVoluntario, setEhVoluntario] = useState('');
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!nome || !email || !telefone || !ehVoluntario) {
-      Alert.alert('Atenção', 'Todos os campos devem ser preenchidos.');
+    if (!email || !senha || !confirmarSenha) {
+      Alert.alert('Erro', 'Preencha todos os campos.');
       return;
     }
-
-    if (!emailRegex.test(email)) {
-      Alert.alert('Erro no Email', 'Digite um email válido. Ex: usuario@email.com');
+    if (senha !== confirmarSenha) {
+      Alert.alert('Erro', 'As senhas não coincidem.');
       return;
     }
-
-    // Validação: telefone precisa estar no formato completo com 15 caracteres
-    if (telefone.length !== 15) {
-      Alert.alert('Erro no Telefone', 'Digite um telefone válido no formato (11) 91234-5678');
-      return;
-    }
-
-    if (ehVoluntario !== 'Sim' && ehVoluntario !== 'Não') {
-      Alert.alert(
-        'Erro no campo "É voluntário?"',
-        'Digite exatamente "Sim" ou "Não", com a primeira letra maiúscula.'
-      );
-      return;
-    }
-
-    const ehVoluntarioInt = ehVoluntario === 'Sim' ? 1 : 0;
-
+    setLoading(true);
     try {
-      await criarUsuario({
-        nome,
-        email,
-        telefone,
-        ehVoluntario: ehVoluntarioInt,
-      });
-
-      Alert.alert('Sucesso', 'Usuário registrado com sucesso!');
-      navigation.navigate('Login');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Erro', 'Não foi possível registrar. Verifique os dados.');
+      await createUserWithEmailAndPassword(auth, email, senha);
+      Alert.alert('Sucesso', 'Conta criada com sucesso!');
+      navigation.replace('Login');
+    } catch (error: any) {
+      const mensagem = error.code ? traduzirErroFirebase(error.code) : 'Erro desconhecido';
+      Alert.alert('Erro no registro', mensagem);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Layout>
       <View style={styles.content}>
-        <Text style={[styles.welcome, { color: colors.primary }]}>Crie sua conta no SOS GR</Text>
+        <Text style={[styles.title, { color: colors.primary }]}>Criar Conta</Text>
 
-        <TextInput
-          placeholder="Nome completo"
-          value={nome}
-          onChangeText={setNome}
-          style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-          placeholderTextColor={colors.placeholder}
-        />
         <TextInput
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
+          autoCapitalize="none"
           style={[styles.input, { borderColor: colors.border, color: colors.text }]}
           placeholderTextColor={colors.placeholder}
         />
-        <MaskedTextInput
-          mask="(99) 99999-9999"
-          keyboardType="phone-pad"
-          value={telefone}
-          onChangeText={setTelefone}
-          placeholder="Telefone"
-          style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-          placeholderTextColor={colors.placeholder}
-        />
+
         <TextInput
-          placeholder='É voluntário? ("Sim" ou "Não")'
-          value={ehVoluntario}
-          onChangeText={setEhVoluntario}
+          placeholder="Senha"
+          value={senha}
+          onChangeText={setSenha}
+          secureTextEntry
+          style={[styles.input, { borderColor: colors.border, color: colors.text }]}
+          placeholderTextColor={colors.placeholder}
+        />
+
+        <TextInput
+          placeholder="Confirmar senha"
+          value={confirmarSenha}
+          onChangeText={setConfirmarSenha}
+          secureTextEntry
           style={[styles.input, { borderColor: colors.border, color: colors.text }]}
           placeholderTextColor={colors.placeholder}
         />
@@ -104,12 +100,21 @@ export default function RegisterScreen() {
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.primary }]}
           onPress={handleRegister}
+          disabled={loading}
         >
-          <Text style={[styles.buttonText, { color: colors.buttonText }]}>Registrar</Text>
+          {loading ? (
+            <ActivityIndicator color={colors.buttonText} />
+          ) : (
+            <Text style={[styles.buttonText, { color: colors.buttonText }]}>Registrar</Text>
+          )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={[styles.link, { color: colors.link }]}>Já tem conta? Faça login</Text>
+        <Text style={[styles.footerText, { color: colors.text }]}>
+          Ao criar uma conta, você concorda com nossos Termos de Serviço e Política de Privacidade.
+        </Text>
+
+        <TouchableOpacity onPress={() => navigation.replace('Login')}>
+          <Text style={[styles.link, { color: colors.link }]}>Já tem uma conta? Faça login</Text>
         </TouchableOpacity>
       </View>
     </Layout>
@@ -121,33 +126,43 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
+    backgroundColor: '#f1f1f1',
   },
-  welcome: {
-    fontSize: 22,
-    fontWeight: '700',
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
+    color: '#4CAF50',
   },
   input: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 18,
     backgroundColor: '#fff',
+    fontSize: 16,
   },
   button: {
-    padding: 14,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 16, 
     alignItems: 'center',
     marginBottom: 12,
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
-  link: {
+  footerText: {
+    fontSize: 12,
     textAlign: 'center',
+    marginTop: 16,
+    color: '#777',
+  },
+  link: {
     fontSize: 16,
-    marginTop: 8,
+    marginTop: 12,
+    textDecorationLine: 'underline',
+    textAlign: 'center',
   },
 });

@@ -5,7 +5,7 @@ export interface UsuarioDTO {
   nome: string;
   email: string;
   telefone: string;
-  ehVoluntario: number; // 1 ou 0
+  ehVoluntario: number;
 }
 
 export const criarUsuario = async (usuario: UsuarioDTO) => {

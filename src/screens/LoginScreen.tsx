@@ -1,18 +1,65 @@
 import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, StyleSheet, View } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import Layout from '../components/Layout';
+import { useTheme } from '../theme';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import Layout from '../components/Layout';
-import { useTheme } from '../theme';
 
 type LoginScreenProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
+
+function traduzirErroFirebase(code: string): string {
+  switch (code) {
+    case 'auth/invalid-email':
+      return 'O e-mail informado é inválido.';
+    case 'auth/user-disabled':
+      return 'Esta conta foi desativada.';
+    case 'auth/user-not-found':
+      return 'Usuário não encontrado.';
+    case 'auth/wrong-password':
+      return 'Senha incorreta.';
+    case 'auth/too-many-requests':
+      return 'Muitas tentativas inválidas. Tente novamente mais tarde.';
+    default:
+      return 'Erro desconhecido. Por favor, tente novamente.';
+  }
+}
 
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenProp>();
   const { colors } = useTheme();
+
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !senha) {
+      Alert.alert('Erro', 'Preencha email e senha.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, senha);
+      navigation.replace('Home');
+    } catch (error: any) {
+      const mensagem = error.code ? traduzirErroFirebase(error.code) : 'Erro desconhecido';
+      Alert.alert('Erro no login', mensagem);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Layout>
@@ -28,6 +75,8 @@ export default function LoginScreen() {
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
           style={[styles.input, { borderColor: colors.border, color: colors.text }]}
           placeholderTextColor={colors.placeholder}
         />
@@ -43,9 +92,14 @@ export default function LoginScreen() {
 
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.primary }]}
-          onPress={() => navigation.navigate('Home')}
+          onPress={handleLogin}
+          disabled={loading}
         >
-          <Text style={[styles.buttonText, { color: colors.buttonText }]}>Entrar</Text>
+          {loading ? (
+            <ActivityIndicator color={colors.buttonText} />
+          ) : (
+            <Text style={[styles.buttonText, { color: colors.buttonText }]}>Entrar</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('Register')}>

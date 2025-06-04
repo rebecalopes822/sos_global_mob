@@ -1,4 +1,5 @@
 import React from 'react';
+import { TouchableOpacity, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
@@ -8,18 +9,28 @@ import HomeScreen from '../screens/HomeScreen';
 import NovaSolicitacaoScreen from '../screens/NovaSolicitacaoScreen';
 import MinhasSolicitacoesScreen from '../screens/MinhasSolicitacoesScreen';
 import EditarSolicitacaoScreen from '../screens/EditarSolicitacaoScreen';
-import TiposAjudaScreen from '../screens/TiposAjudaScreen'; // ✅ IMPORTADA
-
-import { TouchableOpacity, Text } from 'react-native';
+import TiposAjudaScreen from '../screens/TiposAjudaScreen';
 import { useTheme } from '../theme';
+
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Routes() {
   const { colors } = useTheme();
 
+  const handleLogout = async (navigation: any) => {
+    try {
+      await signOut(auth);
+      navigation.replace('Login');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
+
   const renderSairButton = (navigation: any) => (
-    <TouchableOpacity onPress={() => navigation.replace('Login')}>
+    <TouchableOpacity onPress={() => handleLogout(navigation)}>
       <Text style={{ marginRight: 12, color: colors.primary, fontWeight: 'bold' }}>Sair</Text>
     </TouchableOpacity>
   );
@@ -27,11 +38,10 @@ export default function Routes() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        {/* Telas públicas */}
+
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
 
-        {/* Telas privadas */}
         <Stack.Screen
           name="Home"
           component={HomeScreen}

@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: 10,
     alignItems: 'center',
-    backgroundColor: '#FFFFFF', // <- fundo branco fixo
+    backgroundColor: '#f3f7f5',
     borderTopWidth: 1,
     borderColor: '#ddd',
   },

@@ -8,5 +8,5 @@ export type RootStackParamList = {
   MinhasSolicitacoes: undefined;
   Confirmacao: { idSolicitacao: string };
   EditarSolicitacao: { pedido: PedidoAjuda };
-  TiposAjuda: undefined; // ✅ nova rota adicionada
+  TiposAjuda: undefined; 
 };

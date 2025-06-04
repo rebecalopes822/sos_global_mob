@@ -15,7 +15,6 @@ export default function HomeScreen() {
   return (
     <Layout>
       <View style={styles.content}>
-        {/* Imagem da logo no topo */}
         <Image
           source={require('../assets/logo.png')}
           style={styles.logo}
@@ -52,8 +51,8 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    justifyContent: 'flex-start',  // alinha ao topo
-    marginTop: 20,                  // pequeno espaçamento do topo da tela
+    justifyContent: 'flex-start', 
+    marginTop: 20,                  
     paddingHorizontal: 24,
     alignItems: 'center',
   },

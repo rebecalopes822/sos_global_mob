@@ -1,6 +1,6 @@
 export const lightTheme = {
   primary: '#D32F2F',
-  secondary: '#FF9F1C', // ✅ Adicione aqui
+  secondary: '#FF9F1C', 
   background: '#FFEBEE',
   text: '#212121',
   border: '#FFCDD2',
@@ -12,7 +12,7 @@ export const lightTheme = {
 
 export const darkTheme = {
   primary: '#B71C1C',
-  secondary: '#FF9F1C', // ✅ Também adicione aqui
+  secondary: '#FF9F1C', 
   background: '#121212',
   text: '#E0E0E0',
   border: '#444',
@@ -36,7 +36,7 @@ export const useTheme = () => useContext(ThemeContext);
 export const defaultTheme = {
   colors: {
     primary: '#D7263D',
-    secondary: '#FF9F1C', // ✅ adicionado
+    secondary: '#FF9F1C',
     background: '#FFF',
     text: '#000',
     border: '#ccc',
